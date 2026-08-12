@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "notification_id": "build-2026-08-11.2",
+  "request_fingerprint": "f5430f4728c07d8954f41ea28628d481acfc9076ffaaf867ad6af64ed8f863bc",
+  "delivery_policy": "single",
+  "status": "accepted",
+  "attempts": [
+    {
+      "channel": "qq.owner",
+      "provider": "qqbot",
+      "status": "accepted",
+      "reason": "provider_accepted",
+      "acceptance_scope": "provider_api_only",
+      "transformations": [
+        "title_prefixed_to_body",
+        "url_appended_to_body",
+        "tags_omitted",
+        "summary_omitted"
+      ]
+    }
+  ]
+}

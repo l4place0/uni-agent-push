@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "notification_id": "build-2026-08-11.3",
+  "request_fingerprint": "0583ea9e9eca41f40ec269a07b4bd0aba3c41d5a3fd50ff065aa449e71b6ff47",
+  "delivery_policy": "single",
+  "status": "accepted",
+  "attempts": [
+    {
+      "channel": "telegram.team",
+      "provider": "telegram",
+      "status": "accepted",
+      "reason": "provider_accepted",
+      "acceptance_scope": "provider_api_only",
+      "transformations": [
+        "title_prefixed_to_body",
+        "url_appended_to_body",
+        "tags_omitted",
+        "summary_omitted",
+        "markdown_to_provider_html"
+      ]
+    }
+  ]
+}

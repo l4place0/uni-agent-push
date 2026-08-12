@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "command": "channels",
+  "status": "error",
+  "error": "configuration_invalid"
+}

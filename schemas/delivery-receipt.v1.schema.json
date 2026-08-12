@@ -1,0 +1,248 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://uni-push.local/schemas/delivery-receipt.v1.schema.json",
+  "title": "Uni Push delivery receipt v1",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/deliveryReceipt"
+    },
+    {
+      "$ref": "#/$defs/errorReceipt"
+    }
+  ],
+  "$defs": {
+    "notificationId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    },
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "configuredName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z][a-z0-9_-]*)*$"
+    },
+    "attempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "channel",
+        "provider",
+        "status",
+        "reason",
+        "acceptance_scope",
+        "transformations"
+      ],
+      "properties": {
+        "channel": {
+          "$ref": "#/$defs/configuredName"
+        },
+        "provider": {
+          "enum": ["qqbot", "telegram", "serverchan", "smtp"]
+        },
+        "status": {
+          "enum": ["accepted", "rejected", "uncertain"]
+        },
+        "reason": {
+          "enum": [
+            "provider_accepted",
+            "configuration_error",
+            "invalid_target",
+            "authentication_rejected",
+            "rate_limited",
+            "provider_rejected",
+            "transport_rejected",
+            "malformed_response",
+            "timeout_after_send",
+            "transport_ambiguous",
+            "unsupported_content"
+          ]
+        },
+        "acceptance_scope": {
+          "enum": ["provider_api_only", "smtp_relay_only"]
+        },
+        "transformations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "markdown_to_plain",
+              "title_prefixed_to_body",
+              "url_appended_to_body",
+              "tags_omitted",
+              "summary_omitted",
+              "markdown_to_provider_html",
+              "markdown_image_to_link",
+              "markdown_to_email_multipart"
+            ]
+          }
+        },
+        "retry_after_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "provider": { "const": "smtp" }
+            },
+            "required": ["provider"]
+          },
+          "then": {
+            "properties": {
+              "acceptance_scope": { "const": "smtp_relay_only" }
+            }
+          },
+          "else": {
+            "properties": {
+              "acceptance_scope": { "const": "provider_api_only" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": { "const": "accepted" }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason": { "const": "provider_accepted" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": { "const": "rejected" }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "enum": [
+                  "configuration_error",
+                  "invalid_target",
+                  "authentication_rejected",
+                  "rate_limited",
+                  "provider_rejected",
+                  "transport_rejected",
+                  "unsupported_content"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": { "const": "uncertain" }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "enum": [
+                  "malformed_response",
+                  "timeout_after_send",
+                  "transport_ambiguous"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["retry_after_seconds"]
+          },
+          "then": {
+            "properties": {
+              "status": { "const": "rejected" },
+              "reason": { "const": "rate_limited" }
+            }
+          }
+        }
+      ]
+    },
+    "deliveryReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "notification_id",
+        "request_fingerprint",
+        "delivery_policy",
+        "status",
+        "attempts"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "notification_id": {
+          "$ref": "#/$defs/notificationId"
+        },
+        "request_fingerprint": {
+          "$ref": "#/$defs/fingerprint"
+        },
+        "delivery_policy": {
+          "enum": ["single", "fallback", "broadcast"]
+        },
+        "status": {
+          "enum": ["accepted", "rejected", "uncertain", "partial"]
+        },
+        "attempts": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "items": {
+            "$ref": "#/$defs/attempt"
+          }
+        }
+      }
+    },
+    "errorReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "status", "error"],
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "status": {
+          "const": "error"
+        },
+        "error": {
+          "enum": [
+            "invalid_cli_usage",
+            "invalid_input_size",
+            "invalid_json",
+            "invalid_schema",
+            "unsupported_schema_version",
+            "configuration_unavailable",
+            "configuration_invalid",
+            "destination_not_found",
+            "notification_conflict",
+            "notification_in_progress",
+            "ledger_corrupt",
+            "ledger_full",
+            "ledger_unavailable",
+            "interrupted",
+            "internal_error"
+          ]
+        },
+        "notification_id": {
+          "$ref": "#/$defs/notificationId"
+        }
+      }
+    }
+  }
+}

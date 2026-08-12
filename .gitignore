@@ -1,0 +1,8 @@
+*.credentials.json
+*.ledger.sqlite
+*.ledger.sqlite-shm
+*.ledger.sqlite-wal
+*.ledger.json
+*.ledger.json.lock
+dist/
+node_modules/

@@ -1,0 +1,53 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f3f5f2;
+  color: #18221d;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; }
+main { width: min(920px, calc(100% - 32px)); margin: 48px auto; }
+header { margin-bottom: 24px; }
+h1 { margin: 4px 0 8px; font-size: clamp(32px, 6vw, 52px); letter-spacing: -.04em; }
+h2 { margin: 0 0 14px; font-size: 18px; }
+p { color: #5b685f; line-height: 1.6; }
+.eyebrow { margin: 0; color: #17704a; font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0 0 18px; padding: 0; list-style: none; }
+.steps li { padding: 9px 12px; border-radius: 9px; background: #e4e9e5; color: #6a746d; font-size: 12px; font-weight: 750; text-align: center; }
+.steps li.active { background: #19734c; color: #fff; }
+.steps li.done { background: #d5e9dd; color: #17633f; }
+.step, .config-grid > section, .preview, .test-card { padding: 22px; border: 1px solid #d8dfda; border-radius: 16px; background: rgba(255,255,255,.86); box-shadow: 0 12px 36px rgba(30,50,38,.05); }
+form.step { padding: 0; border: 0; background: none; box-shadow: none; }
+.config-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+label { display: grid; gap: 7px; margin-top: 14px; font-size: 13px; font-weight: 700; }
+input, select { width: 100%; border: 1px solid #c7d0ca; border-radius: 9px; padding: 10px 11px; background: #fff; color: inherit; }
+input:focus, select:focus { outline: 3px solid rgba(32,132,88,.16); border-color: #208458; }
+.check { display: flex; align-items: center; }
+.check input { width: auto; }
+.actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+button { border: 0; border-radius: 10px; padding: 11px 16px; font: inherit; font-weight: 750; cursor: pointer; background: #dfe7e1; color: #1b392a; }
+button.primary { background: #19734c; color: #fff; }
+button:disabled { cursor: not-allowed; opacity: .48; }
+.preview, .test-card { margin-top: 16px; }
+.preview-title { display: flex; align-items: center; justify-content: space-between; }
+#status { color: #17704a; font-size: 13px; font-weight: 700; }
+pre { margin: 0; overflow: auto; padding: 16px; border-radius: 10px; background: #142019; color: #dff6e8; font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.path-box, .result { padding: 14px 16px; border-radius: 10px; background: #edf1ee; color: #35463c; }
+.path-box { display: grid; gap: 6px; }
+.path-box span { color: #6a746d; font-size: 12px; }
+.path-box code { overflow-wrap: anywhere; }
+.result[data-status="passed"], .result[data-status="accepted"] { background: #dff3e7; color: #155f3c; }
+.result[data-status="failed"], .result[data-status="rejected"], .result[data-status="uncertain"] { background: #fff0d9; color: #794b0b; }
+.field-help { margin: 7px 0 0; font-size: 12px; }
+.discovery-help { margin-top: 12px; padding: 11px 12px; border-radius: 10px; background: #edf1ee; color: #35463c; font-size: 12px; }
+.discovery-help summary { cursor: pointer; font-weight: 750; }
+.discovery-help ol { margin: 10px 0; padding-left: 20px; color: #5b685f; line-height: 1.55; }
+.discovery-help button { padding: 8px 10px; font-size: 12px; }
+
+@media (max-width: 760px) {
+  main { margin: 24px auto; }
+  .config-grid { grid-template-columns: 1fr; }
+  .steps li { padding-inline: 5px; }
+}

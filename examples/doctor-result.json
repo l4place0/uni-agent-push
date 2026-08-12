@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "command": "doctor",
+  "status": "passed",
+  "summary": {
+    "passed": 17,
+    "failed": 0,
+    "warning": 0,
+    "skipped": 5
+  },
+  "checks": [
+    {"scope":"configuration","subject":"configuration","check":"configuration","status":"passed","reason":"ok"},
+
+    {"scope":"connection","subject":"qq-main","provider":"qqbot","check":"secret_availability","status":"passed","reason":"ok"},
+    {"scope":"connection","subject":"qq-main","provider":"qqbot","check":"secret_format","status":"passed","reason":"ok"},
+    {"scope":"connection","subject":"qq-main","provider":"qqbot","check":"authentication","status":"passed","reason":"ok"},
+
+    {"scope":"connection","subject":"serverchan-sct","provider":"serverchan","check":"secret_availability","status":"passed","reason":"ok"},
+    {"scope":"connection","subject":"serverchan-sct","provider":"serverchan","check":"secret_format","status":"passed","reason":"ok"},
+    {"scope":"connection","subject":"serverchan-sct","provider":"serverchan","check":"dns","status":"passed","reason":"ok"},
+    {"scope":"connection","subject":"serverchan-sct","provider":"serverchan","check":"tls","status":"passed","reason":"ok"},
+    {"scope":"connection","subject":"serverchan-sct","provider":"serverchan","check":"authentication","status":"skipped","reason":"side_effect_not_allowed"},
+
+    {"scope":"connection","subject":"smtp-main","provider":"smtp","check":"secret_availability","status":"passed","reason":"ok"},
+    {"scope":"connection","subject":"smtp-main","provider":"smtp","check":"dns","status":"passed","reason":"ok"},
+    {"scope":"connection","subject":"smtp-main","provider":"smtp","check":"tls","status":"passed","reason":"ok"},
+    {"scope":"connection","subject":"smtp-main","provider":"smtp","check":"authentication","status":"passed","reason":"ok"},
+
+    {"scope":"connection","subject":"telegram-main","provider":"telegram","check":"secret_availability","status":"passed","reason":"ok"},
+    {"scope":"connection","subject":"telegram-main","provider":"telegram","check":"secret_format","status":"passed","reason":"ok"},
+    {"scope":"connection","subject":"telegram-main","provider":"telegram","check":"authentication","status":"passed","reason":"ok"},
+
+    {"scope":"channel","subject":"email.owner","provider":"smtp","check":"target_access","status":"skipped","reason":"side_effect_not_allowed"},
+    {"scope":"channel","subject":"qq.owner","provider":"qqbot","check":"target_access","status":"skipped","reason":"side_effect_not_allowed"},
+    {"scope":"channel","subject":"qq.team","provider":"qqbot","check":"target_access","status":"skipped","reason":"side_effect_not_allowed"},
+    {"scope":"channel","subject":"serverchan.owner","provider":"serverchan","check":"option_compatibility","status":"passed","reason":"ok"},
+    {"scope":"channel","subject":"serverchan.owner","provider":"serverchan","check":"target_access","status":"skipped","reason":"side_effect_not_allowed"},
+    {"scope":"channel","subject":"telegram.team","provider":"telegram","check":"target_access","status":"passed","reason":"ok"}
+  ]
+}

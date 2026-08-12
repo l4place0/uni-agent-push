@@ -1,0 +1,87 @@
+name: Build and release binaries
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: darwin-x64
+            runner: macos-15-intel
+            archive: uni-push-darwin-x64.tar.gz
+            shell: bash
+          - target: darwin-arm64
+            runner: macos-15
+            archive: uni-push-darwin-arm64.tar.gz
+            shell: bash
+          - target: linux-x64
+            runner: ubuntu-24.04
+            archive: uni-push-linux-x64.tar.gz
+            shell: bash
+          - target: linux-arm64
+            runner: ubuntu-24.04-arm
+            archive: uni-push-linux-arm64.tar.gz
+            shell: bash
+          - target: windows-x64
+            runner: windows-2025
+            archive: uni-push-windows-x64.zip
+            shell: pwsh
+          - target: windows-arm64
+            runner: windows-11-arm
+            archive: uni-push-windows-arm64.zip
+            shell: pwsh
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 26.5.0
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+      - run: npm run smoke
+      - name: Package Unix binary
+        if: runner.os != 'Windows'
+        run: tar -C dist -czf "${{ matrix.archive }}" uni-push
+      - name: Package Windows binary
+        if: runner.os == 'Windows'
+        run: Compress-Archive -Path dist/uni-push.exe -DestinationPath "${{ matrix.archive }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: ${{ matrix.archive }}
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+      - name: Generate checksums
+        working-directory: release-assets
+        run: sha256sum uni-push-* > SHA256SUMS
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" release-assets/* --repo "${GITHUB_REPOSITORY}" --generate-notes --verify-tag

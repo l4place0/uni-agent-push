@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "command": "doctor",
+  "status": "failed",
+  "summary": {
+    "passed": 1,
+    "failed": 1,
+    "warning": 0,
+    "skipped": 1
+  },
+  "checks": [
+    {"scope":"configuration","subject":"configuration","check":"configuration","status":"passed","reason":"ok"},
+    {"scope":"connection","subject":"telegram-main","provider":"telegram","check":"authentication","status":"failed","reason":"authentication_rejected"},
+    {"scope":"channel","subject":"telegram.team","provider":"telegram","check":"target_access","status":"skipped","reason":"prerequisite_failed"}
+  ]
+}

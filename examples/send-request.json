@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "notification_id": "build-2026-08-11.1",
+  "destination": {
+    "kind": "target",
+    "name": "owner"
+  },
+  "message": {
+    "title": "Build complete",
+    "body": "Artifact is ready for review.",
+    "summary": "Artifact ready",
+    "format": "plain",
+    "priority": "normal",
+    "url": "https://example.com/builds/2026-08-11",
+    "tags": ["build", "success"]
+  },
+  "policy": {
+    "mode": "fallback"
+  }
+}

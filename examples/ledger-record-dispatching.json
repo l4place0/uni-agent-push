@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "notification_id": "build-2026-08-11.7",
+  "request_fingerprint": "bb8fcc5cee0855c32eed0431f44ca3f126c8e514a4f45b39b1e0222d511a24c3",
+  "route_fingerprint": "c39f5a2969b91ed078f328acf618a47fc3295f3743e6326769ddaa79ef83d69f",
+  "delivery_policy": "fallback",
+  "state": "in_progress",
+  "phase": "dispatching",
+  "planned_attempts": [
+    {
+      "channel": "serverchan.owner",
+      "provider": "serverchan",
+      "acceptance_scope": "provider_api_only"
+    },
+    {
+      "channel": "telegram.team",
+      "provider": "telegram",
+      "acceptance_scope": "provider_api_only"
+    }
+  ],
+  "next_attempt_index": 0,
+  "attempts": [],
+  "active_attempt": {
+    "channel": "serverchan.owner",
+    "provider": "serverchan",
+    "acceptance_scope": "provider_api_only",
+    "transformations": ["url_appended_to_body"]
+  },
+  "recovery_count": 0,
+  "created_at": "2026-08-11T08:00:00Z",
+  "updated_at": "2026-08-11T08:00:01Z"
+}

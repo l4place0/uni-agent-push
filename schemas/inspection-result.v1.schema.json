@@ -1,0 +1,512 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://uni-push.local/schemas/inspection-result.v1.schema.json",
+  "title": "Uni Push inspection command result v1",
+  "oneOf": [
+    { "$ref": "#/$defs/targetsResult" },
+    { "$ref": "#/$defs/channelsResult" },
+    { "$ref": "#/$defs/configValidationResult" },
+    { "$ref": "#/$defs/doctorResult" },
+    { "$ref": "#/$defs/commandError" }
+  ],
+  "$defs": {
+    "configuredName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z][a-z0-9_-]*)*$"
+    },
+    "provider": {
+      "enum": ["qqbot", "telegram", "serverchan", "smtp"]
+    },
+    "acceptanceScope": {
+      "enum": ["provider_api_only", "smtp_relay_only"]
+    },
+    "targetsResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "command", "status", "targets"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "command": { "const": "targets" },
+        "status": { "const": "ok" },
+        "targets": {
+          "type": "array",
+          "maxItems": 4096,
+          "items": { "$ref": "#/$defs/targetSummary" }
+        }
+      }
+    },
+    "targetSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "policy", "channels", "providers"],
+      "properties": {
+        "name": { "$ref": "#/$defs/configuredName" },
+        "policy": { "enum": ["single", "fallback", "broadcast"] },
+        "channels": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/configuredName" }
+        },
+        "providers": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/provider" }
+        }
+      }
+    },
+    "channelsResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "command", "status", "channels"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "command": { "const": "channels" },
+        "status": { "const": "ok" },
+        "channels": {
+          "type": "array",
+          "maxItems": 4096,
+          "items": { "$ref": "#/$defs/channelSummary" }
+        }
+      }
+    },
+    "channelSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "provider",
+        "delivery_shape",
+        "acceptance_scope",
+        "formats",
+        "configured_options"
+      ],
+      "properties": {
+        "name": { "$ref": "#/$defs/configuredName" },
+        "provider": { "$ref": "#/$defs/provider" },
+        "delivery_shape": {
+          "enum": [
+            "qq_group",
+            "qq_user",
+            "telegram_chat",
+            "telegram_topic",
+            "serverchan_personal",
+            "smtp_recipient_list"
+          ]
+        },
+        "acceptance_scope": { "$ref": "#/$defs/acceptanceScope" },
+        "formats": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": { "enum": ["plain", "markdown"] }
+        },
+        "configured_options": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "forum_topic",
+              "link_preview_disabled",
+              "silent",
+              "protected_content",
+              "delivery_channels",
+              "caller_ip_hidden",
+              "multiple_recipients",
+              "cc",
+              "bcc",
+              "reply_to"
+            ]
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "provider": { "const": "qqbot" } },
+            "required": ["provider"]
+          },
+          "then": {
+            "properties": {
+              "delivery_shape": { "enum": ["qq_group", "qq_user"] },
+              "acceptance_scope": { "const": "provider_api_only" },
+              "configured_options": { "type": "array", "maxItems": 0 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "provider": { "const": "telegram" } },
+            "required": ["provider"]
+          },
+          "then": {
+            "properties": {
+              "delivery_shape": {
+                "enum": ["telegram_chat", "telegram_topic"]
+              },
+              "acceptance_scope": { "const": "provider_api_only" },
+              "configured_options": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "forum_topic",
+                    "link_preview_disabled",
+                    "silent",
+                    "protected_content"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "provider": { "const": "serverchan" } },
+            "required": ["provider"]
+          },
+          "then": {
+            "properties": {
+              "delivery_shape": { "const": "serverchan_personal" },
+              "acceptance_scope": { "const": "provider_api_only" },
+              "configured_options": {
+                "type": "array",
+                "items": {
+                  "enum": ["delivery_channels", "caller_ip_hidden"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "provider": { "const": "smtp" } },
+            "required": ["provider"]
+          },
+          "then": {
+            "properties": {
+              "delivery_shape": { "const": "smtp_recipient_list" },
+              "acceptance_scope": { "const": "smtp_relay_only" },
+              "configured_options": {
+                "type": "array",
+                "items": {
+                  "enum": ["multiple_recipients", "cc", "bcc", "reply_to"]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "configValidationResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "command", "status", "issues"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "command": { "const": "config_validate" },
+        "status": { "enum": ["valid", "invalid"] },
+        "issues": {
+          "type": "array",
+          "maxItems": 1024,
+          "items": { "$ref": "#/$defs/configIssue" }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "status": { "const": "valid" } },
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "issues": {
+                "type": "array",
+                "not": {
+                  "contains": {
+                    "type": "object",
+                    "properties": { "severity": { "const": "error" } },
+                    "required": ["severity"]
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "issues": {
+                "type": "array",
+                "contains": {
+                  "type": "object",
+                  "properties": { "severity": { "const": "error" } },
+                  "required": ["severity"]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "configIssue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["severity", "code", "path"],
+      "properties": {
+        "severity": { "enum": ["error", "warning"] },
+        "code": {
+          "enum": [
+            "invalid_json",
+            "invalid_schema",
+            "unsupported_config_version",
+            "unknown_connection",
+            "connection_provider_mismatch",
+            "unknown_channel",
+            "empty_route",
+            "duplicate_effective_endpoint",
+            "smtp_duplicate_recipient",
+            "smtp_recipient_limit",
+            "provider_option_incompatible",
+            "secret_dependent_check_deferred",
+            "secret_reference_invalid"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "maxLength": 1024,
+          "pattern": "^(?:|/.*)$"
+        }
+      }
+    },
+    "doctorResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "command", "status", "summary", "checks"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "command": { "const": "doctor" },
+        "status": { "enum": ["passed", "failed"] },
+        "summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["passed", "failed", "warning", "skipped"],
+          "properties": {
+            "passed": { "type": "integer", "minimum": 0 },
+            "failed": { "type": "integer", "minimum": 0 },
+            "warning": { "type": "integer", "minimum": 0 },
+            "skipped": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "checks": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16384,
+          "items": { "$ref": "#/$defs/doctorCheck" }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "status": { "const": "passed" } },
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "summary": {
+                "type": "object",
+                "properties": { "failed": { "type": "integer", "const": 0 } }
+              },
+              "checks": {
+                "type": "array",
+                "not": {
+                  "contains": {
+                    "type": "object",
+                    "properties": { "status": { "const": "failed" } },
+                    "required": ["status"]
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "summary": {
+                "type": "object",
+                "properties": {
+                  "failed": { "type": "integer", "minimum": 1 }
+                }
+              },
+              "checks": {
+                "type": "array",
+                "contains": {
+                  "type": "object",
+                  "properties": { "status": { "const": "failed" } },
+                  "required": ["status"]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "doctorCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "subject", "check", "status", "reason"],
+      "properties": {
+        "scope": { "enum": ["configuration", "connection", "channel"] },
+        "subject": { "$ref": "#/$defs/configuredName" },
+        "provider": { "$ref": "#/$defs/provider" },
+        "check": {
+          "enum": [
+            "configuration",
+            "secret_availability",
+            "secret_format",
+            "dns",
+            "tls",
+            "authentication",
+            "target_access",
+            "option_compatibility"
+          ]
+        },
+        "status": { "enum": ["passed", "failed", "warning", "skipped"] },
+        "reason": {
+          "enum": [
+            "ok",
+            "not_applicable",
+            "side_effect_not_allowed",
+            "not_supported_by_provider",
+            "prerequisite_failed",
+            "secret_unavailable",
+            "invalid_secret_format",
+            "dns_failed",
+            "tls_failed",
+            "authentication_rejected",
+            "provider_unreachable",
+            "provider_rejected",
+            "target_unreachable",
+            "option_incompatible",
+            "timeout",
+            "rate_limited"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "status": { "const": "passed" } },
+            "required": ["status"]
+          },
+          "then": { "properties": { "reason": { "const": "ok" } } }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": { "enum": ["failed", "warning", "skipped"] }
+            },
+            "required": ["status"]
+          },
+          "then": {
+            "properties": { "reason": { "not": { "const": "ok" } } }
+          }
+        },
+        {
+          "if": {
+            "properties": { "status": { "const": "skipped" } },
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "enum": [
+                  "not_applicable",
+                  "side_effect_not_allowed",
+                  "not_supported_by_provider",
+                  "prerequisite_failed"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "status": { "const": "failed" } },
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "not": {
+                  "enum": [
+                    "ok",
+                    "not_applicable",
+                    "side_effect_not_allowed",
+                    "not_supported_by_provider",
+                    "prerequisite_failed"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "scope": { "enum": ["connection", "channel"] } },
+            "required": ["scope"]
+          },
+          "then": { "required": ["provider"] }
+        },
+        {
+          "if": {
+            "properties": { "scope": { "const": "configuration" } },
+            "required": ["scope"]
+          },
+          "then": {
+            "properties": {
+              "subject": { "const": "configuration" },
+              "check": { "const": "configuration" }
+            },
+            "not": { "required": ["provider"] }
+          }
+        }
+      ]
+    },
+    "commandError": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "command", "status", "error"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "command": {
+          "enum": ["targets", "channels", "config_validate", "doctor"]
+        },
+        "status": { "const": "error" },
+        "error": {
+          "enum": [
+            "invalid_cli_usage",
+            "invalid_input_size",
+            "configuration_unavailable",
+            "configuration_invalid",
+            "internal_error",
+            "interrupted"
+          ]
+        },
+        "signal": { "enum": ["SIGINT", "SIGTERM"] }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "error": { "const": "interrupted" } },
+            "required": ["error"]
+          },
+          "then": { "required": ["signal"] },
+          "else": { "not": { "required": ["signal"] } }
+        }
+      ]
+    }
+  }
+}

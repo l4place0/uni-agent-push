@@ -1,0 +1,22 @@
+{
+  "name": "uni-push-cli",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Unified Agent notification CLI for ServerChan, Telegram Bot, and QQ Bot",
+  "type": "module",
+  "bin": {
+    "uni-push": "bin/uni-push.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check bin/uni-push.js && node --check src/secrets.js && node --check src/providers/telegram.js && node --check src/providers/qqbot.js && node --check src/ui/public/app.js && node --test",
+    "build": "node scripts/build-sea.mjs",
+    "smoke": "node scripts/smoke-binary.mjs"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.9"
+  }
+}

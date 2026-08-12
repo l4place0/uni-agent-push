@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "action": "validate_config",
+  "revision": "53da3f252a90a316a46eaa7ea56fd82b5b1359dd06efc10f6986d867066b9f45",
+  "config": {
+    "version": 1,
+    "connections": {
+      "telegram-main": {
+        "provider": "telegram",
+        "token": "env:TELEGRAM_BOT_TOKEN"
+      }
+    },
+    "channels": {
+      "telegram.owner": {
+        "provider": "telegram",
+        "connection": "telegram-main",
+        "chat_id": "123456789"
+      }
+    },
+    "targets": {
+      "owner": {
+        "channels": ["telegram.owner"],
+        "policy": "single"
+      }
+    }
+  }
+}

@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://uni-push.local/schemas/dry-run-result.v1.schema.json",
+  "title": "Uni Push dry-run result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "operation",
+    "status",
+    "notification_id",
+    "request_fingerprint",
+    "delivery_policy",
+    "guarantees",
+    "attempts",
+    "warnings"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "operation": { "const": "dry_run" },
+    "status": { "const": "ready" },
+    "notification_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    },
+    "request_fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "delivery_policy": {
+      "enum": ["single", "fallback", "broadcast"]
+    },
+    "guarantees": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "network_access",
+        "secrets_resolved",
+        "ledger_mutated",
+        "persistent_state_written"
+      ],
+      "properties": {
+        "network_access": { "const": false },
+        "secrets_resolved": { "const": false },
+        "ledger_mutated": { "const": false },
+        "persistent_state_written": { "const": false }
+      }
+    },
+    "attempts": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": { "$ref": "#/$defs/plannedAttempt" }
+    },
+    "warnings": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "credentials_not_checked",
+          "connectivity_not_checked",
+          "secret_dependent_capabilities_not_checked",
+          "fallback_stops_on_uncertain",
+          "broadcast_contacts_all_channels",
+          "smtp_acceptance_is_relay_only",
+          "provider_rendering_may_differ"
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "configuredName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z][a-z0-9_-]*)*$"
+    },
+    "plannedAttempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "order",
+        "channel",
+        "provider",
+        "condition",
+        "plan_completeness",
+        "acceptance_scope",
+        "output_format",
+        "transformations"
+      ],
+      "properties": {
+        "order": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32
+        },
+        "channel": { "$ref": "#/$defs/configuredName" },
+        "provider": {
+          "enum": ["qqbot", "telegram", "serverchan", "smtp"]
+        },
+        "condition": {
+          "enum": ["always", "after_prior_rejected"]
+        },
+        "plan_completeness": {
+          "enum": ["complete", "secret_dependent"]
+        },
+        "acceptance_scope": {
+          "enum": ["provider_api_only", "smtp_relay_only"]
+        },
+        "output_format": {
+          "enum": [
+            "plain_text",
+            "provider_markdown",
+            "provider_html",
+            "email_multipart"
+          ]
+        },
+        "transformations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "markdown_to_plain",
+              "title_prefixed_to_body",
+              "url_appended_to_body",
+              "tags_omitted",
+              "summary_omitted",
+              "markdown_to_provider_html",
+              "markdown_image_to_link",
+              "markdown_to_email_multipart"
+            ]
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "provider": { "const": "smtp" } },
+            "required": ["provider"]
+          },
+          "then": {
+            "properties": {
+              "acceptance_scope": { "const": "smtp_relay_only" },
+              "output_format": {
+                "enum": ["plain_text", "email_multipart"]
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "acceptance_scope": { "const": "provider_api_only" },
+              "output_format": {
+                "enum": ["plain_text", "provider_markdown", "provider_html"]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "provider": { "const": "serverchan" } },
+            "required": ["provider"]
+          },
+          "then": {
+            "properties": {
+              "plan_completeness": { "const": "secret_dependent" }
+            }
+          },
+          "else": {
+            "properties": {
+              "plan_completeness": { "const": "complete" }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

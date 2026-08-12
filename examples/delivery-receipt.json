@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "notification_id": "build-2026-08-11.1",
+  "request_fingerprint": "8e589064fe42275162f05250e7dbd84c7217ba1f9a9a24ceeb3f1952a4a15e22",
+  "delivery_policy": "fallback",
+  "status": "accepted",
+  "attempts": [
+    {
+      "channel": "serverchan.owner",
+      "provider": "serverchan",
+      "status": "accepted",
+      "reason": "provider_accepted",
+      "acceptance_scope": "provider_api_only",
+      "transformations": []
+    }
+  ]
+}

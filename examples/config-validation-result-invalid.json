@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "command": "config_validate",
+  "status": "invalid",
+  "issues": [
+    {
+      "severity": "error",
+      "code": "smtp_duplicate_recipient",
+      "path": "/channels/email.owner/cc/0"
+    },
+    {
+      "severity": "warning",
+      "code": "secret_dependent_check_deferred",
+      "path": "/channels/serverchan.owner/delivery_channels"
+    }
+  ]
+}

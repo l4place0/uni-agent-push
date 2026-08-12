@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "command": "config_validate",
+  "status": "valid",
+  "issues": []
+}

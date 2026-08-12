@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "notification_id": "build-2026-08-11.8",
+  "request_fingerprint": "03ccb175af522abd321b744a46a34ce16f2f7f34aaefc101731777cda4dca55f",
+  "route_fingerprint": "583562d0bf91ef5e22678c4eaefc835b9fdbb97188604beaf4b976c587d3263e",
+  "delivery_policy": "single",
+  "state": "terminal",
+  "phase": "complete",
+  "planned_attempts": [
+    {
+      "channel": "serverchan.owner",
+      "provider": "serverchan",
+      "acceptance_scope": "provider_api_only"
+    }
+  ],
+  "next_attempt_index": 1,
+  "attempts": [
+    {
+      "channel": "serverchan.owner",
+      "provider": "serverchan",
+      "status": "accepted",
+      "reason": "provider_accepted",
+      "acceptance_scope": "provider_api_only",
+      "transformations": []
+    }
+  ],
+  "receipt": {
+    "schema_version": 1,
+    "notification_id": "build-2026-08-11.8",
+    "request_fingerprint": "03ccb175af522abd321b744a46a34ce16f2f7f34aaefc101731777cda4dca55f",
+    "delivery_policy": "single",
+    "status": "accepted",
+    "attempts": [
+      {
+        "channel": "serverchan.owner",
+        "provider": "serverchan",
+        "status": "accepted",
+        "reason": "provider_accepted",
+        "acceptance_scope": "provider_api_only",
+        "transformations": []
+      }
+    ]
+  },
+  "recovery_count": 0,
+  "created_at": "2026-08-11T08:10:00Z",
+  "updated_at": "2026-08-11T08:10:02Z",
+  "completed_at": "2026-08-11T08:10:02Z",
+  "expires_at": "2026-09-10T08:10:02Z"
+}

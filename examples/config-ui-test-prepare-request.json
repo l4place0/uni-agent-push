@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "action": "prepare_test",
+  "revision": "24e3a1cde1f8c4c50b0a7513fb8c4c804aca923512a7820b8a502bd5a8513590",
+  "request": {
+    "schema_version": 1,
+    "notification_id": "ui-test-2026-08-11.1",
+    "destination": {
+      "kind": "target",
+      "name": "owner"
+    },
+    "message": {
+      "title": "Uni Push test",
+      "body": "This is an explicitly confirmed test.",
+      "format": "plain",
+      "priority": "normal"
+    },
+    "policy": {
+      "mode": "single"
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "operation": "dry_run",
+  "status": "ready",
+  "notification_id": "build-2026-08-11.1",
+  "request_fingerprint": "8e589064fe42275162f05250e7dbd84c7217ba1f9a9a24ceeb3f1952a4a15e22",
+  "delivery_policy": "fallback",
+  "guarantees": {
+    "network_access": false,
+    "secrets_resolved": false,
+    "ledger_mutated": false,
+    "persistent_state_written": false
+  },
+  "attempts": [
+    {
+      "order": 1,
+      "channel": "serverchan.owner",
+      "provider": "serverchan",
+      "condition": "always",
+      "plan_completeness": "secret_dependent",
+      "acceptance_scope": "provider_api_only",
+      "output_format": "plain_text",
+      "transformations": []
+    },
+    {
+      "order": 2,
+      "channel": "telegram.team",
+      "provider": "telegram",
+      "condition": "after_prior_rejected",
+      "plan_completeness": "complete",
+      "acceptance_scope": "provider_api_only",
+      "output_format": "plain_text",
+      "transformations": [
+        "title_prefixed_to_body",
+        "url_appended_to_body",
+        "tags_omitted",
+        "summary_omitted"
+      ]
+    }
+  ],
+  "warnings": [
+    "credentials_not_checked",
+    "connectivity_not_checked",
+    "secret_dependent_capabilities_not_checked",
+    "fallback_stops_on_uncertain",
+    "provider_rendering_may_differ"
+  ]
+}

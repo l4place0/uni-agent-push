@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "notification_id": "build-2026-08-11.5",
+  "request_fingerprint": "41a548c18e64313c7e9e6a0664d8605704393529a8ea4181cd9a16a4ce0fc301",
+  "delivery_policy": "single",
+  "status": "accepted",
+  "attempts": [
+    {
+      "channel": "email.owner",
+      "provider": "smtp",
+      "status": "accepted",
+      "reason": "provider_accepted",
+      "acceptance_scope": "smtp_relay_only",
+      "transformations": [
+        "url_appended_to_body",
+        "summary_omitted",
+        "tags_omitted"
+      ]
+    }
+  ]
+}

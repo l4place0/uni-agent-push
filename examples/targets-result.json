@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "command": "targets",
+  "status": "ok",
+  "targets": [
+    {
+      "name": "owner",
+      "policy": "fallback",
+      "channels": ["serverchan.owner", "telegram.team"],
+      "providers": ["serverchan", "telegram"]
+    },
+    {
+      "name": "owner-all",
+      "policy": "broadcast",
+      "channels": ["serverchan.owner", "telegram.team", "email.owner"],
+      "providers": ["serverchan", "smtp", "telegram"]
+    },
+    {
+      "name": "project-team",
+      "policy": "broadcast",
+      "channels": ["qq.team", "telegram.team"],
+      "providers": ["qqbot", "telegram"]
+    },
+    {
+      "name": "qq-owner",
+      "policy": "single",
+      "channels": ["qq.owner"],
+      "providers": ["qqbot"]
+    }
+  ]
+}

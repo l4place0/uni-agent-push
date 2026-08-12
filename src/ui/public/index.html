@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Uni Push 配置</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">Uni Push MVP</p>
+        <h1 id="page-title">Uni Push 配置</h1>
+        <p id="page-description">配置并检查一个 Agent 推送目标。</p>
+      </header>
+
+      <ol class="steps" aria-label="配置进度">
+        <li data-step-indicator="0">开始</li>
+        <li data-step-indicator="1">配置</li>
+        <li data-step-indicator="2">检查</li>
+        <li data-step-indicator="3">完成</li>
+      </ol>
+
+      <section class="step" data-step="0">
+        <h2>开始配置</h2>
+        <p>选择 ServerChan、Telegram Bot 或 QQ Bot，并在下一步填写凭据和固定目标。</p>
+        <p>凭据只会发送到本机回环服务，并保存在独立的私密文件中；主配置、预览、日志和 API 响应不会包含完整值。</p>
+        <div class="path-box"><span>配置将保存到</span><code id="config-path">正在读取…</code></div>
+        <div class="actions"><button type="button" class="primary" id="start">开始</button></div>
+      </section>
+
+      <form id="config-form" class="step" data-step="1" hidden>
+        <div class="config-grid">
+          <section>
+            <h2>连接</h2>
+            <label>推送平台
+              <select id="provider">
+                <option value="serverchan">ServerChan</option>
+                <option value="telegram">Telegram Bot</option>
+                <option value="qqbot">QQ Bot</option>
+              </select>
+            </label>
+            <label>连接名称 <input id="connection" required pattern="[a-z][a-z0-9_-]*" value="serverchan-main"></label>
+            <div id="qq-connection-fields" hidden>
+              <label>QQ Bot AppID <input id="qq-app-id" placeholder="开放平台 AppID"></label>
+            </div>
+            <label>凭据来源
+              <select id="credential-source">
+                <option value="store">保存在本机（推荐）</option>
+                <option value="env">使用环境变量</option>
+              </select>
+            </label>
+            <div id="stored-credential-fields">
+              <label><span id="credential-label">ServerChan SendKey</span>
+                <input id="send-key" type="password" autocomplete="new-password" spellcheck="false" placeholder="SCT… 或 sctp…">
+              </label>
+              <p class="field-help" id="credential-help">保存后不会回显；再次留空表示保持不变。</p>
+            </div>
+            <div id="environment-fields" hidden>
+              <label>环境变量名称 <input id="environment" pattern="[A-Z_][A-Z0-9_]*" value="SERVERCHAN_SEND_KEY"></label>
+            </div>
+          </section>
+          <section>
+            <h2>渠道</h2>
+            <label>渠道名称 <input id="channel" required value="serverchan.owner"></label>
+            <div id="serverchan-channel-fields">
+              <label>ServerChan 投递渠道（可选，逗号分隔） <input id="delivery-channels" placeholder="9,66"></label>
+              <label class="check"><input id="hide-ip" type="checkbox"> 隐藏调用 IP（SCT）</label>
+            </div>
+            <div id="telegram-channel-fields" hidden>
+              <label>Chat ID 或频道用户名 <input id="telegram-chat-id" placeholder="-100… 或 @channel"></label>
+              <details class="discovery-help">
+                <summary>不知道 Chat ID？协助发现</summary>
+                <ol>
+                  <li>私聊：打开这个 Token 对应的 Bot，点击 Start 并发送 <code>/start</code>。</li>
+                  <li>群聊：把 Bot 加入目标群，发送 <code>/start@Bot用户名</code> 或 @Bot。</li>
+                  <li>回到这里点击“查找候选 Chat ID”。发现操作不发送消息，也不读取消息正文。</li>
+                </ol>
+                <button type="button" id="discover-telegram">查找候选 Chat ID</button>
+                <div id="telegram-discovery-result" class="field-help" role="status">尚未查找</div>
+              </details>
+              <label>Topic ID（可选） <input id="telegram-thread-id" type="number" min="1"></label>
+              <label class="check"><input id="telegram-disable-preview" type="checkbox"> 禁用链接预览</label>
+              <label class="check"><input id="telegram-silent" type="checkbox"> 静默发送</label>
+              <label class="check"><input id="telegram-protect" type="checkbox"> 禁止转发与保存</label>
+            </div>
+            <div id="qq-channel-fields" hidden>
+              <label>目标类型 <select id="qq-target-type"><option value="user">用户</option><option value="group">群聊</option></select></label>
+              <label>目标 OpenID <input id="qq-openid" placeholder="不是 QQ 号或群号"></label>
+              <p class="field-help">必须是该机器人的不透明 OpenID，纯数字 QQ 号/群号无效。</p>
+              <details class="discovery-help">
+                <summary>不知道 OpenID？查看获取路径</summary>
+                <ol>
+                  <li>先在 QQ 开放平台为机器人启用群聊或单聊消息事件，并连接 WebSocket Gateway 或配置 Webhook。</li>
+                  <li>让目标用户私聊机器人，或在目标群里 @机器人，触发一条入站事件。</li>
+                  <li>从该事件提取对应的用户 OpenID 或群 OpenID；OpenID 与 Bot AppID 绑定，不能跨机器人复用。</li>
+                  <li>没有事件接收器时，回到 Agent 对话说“协助获取 QQ OpenID”，由 Agent 帮你检查现有网关或搭建临时接收流程。</li>
+                </ol>
+              </details>
+            </div>
+          </section>
+          <section>
+            <h2>Agent 目标</h2>
+            <label>目标名称 <input id="target" required value="owner"></label>
+          </section>
+        </div>
+        <section class="preview">
+          <div class="preview-title"><h2>配置预览</h2><span id="status" role="status">正在连接…</span></div>
+          <pre id="preview"></pre>
+        </section>
+        <div class="actions">
+          <button type="button" id="back-start">返回</button>
+          <button type="button" id="validate">仅校验</button>
+          <button type="submit" class="primary">保存并继续</button>
+        </div>
+      </form>
+
+      <section class="step" data-step="2" hidden>
+        <h2>检查配置</h2>
+        <p>检查配置、凭据与目标。Telegram 会调用 getMe/getChat，QQ 只换取 Access Token，均不会发送消息。</p>
+        <div id="check-result" class="result" role="status">尚未检查</div>
+        <div class="actions"><button type="button" id="back-config">返回配置</button><button type="button" class="primary" id="run-check">运行检查</button></div>
+
+        <div class="test-card onboard-only">
+          <h2>可选：发送测试通知</h2>
+          <p>这一步会真实调用所选平台。必须主动勾选确认；当前向导会话内重复点击不会重复投递。</p>
+          <label class="check"><input id="test-confirm" type="checkbox"> 我确认发送一条固定内容的测试通知</label>
+          <div id="test-result" class="result" role="status">未发送</div>
+          <div class="actions"><button type="button" id="send-test" disabled>发送测试通知</button></div>
+        </div>
+
+        <div class="actions"><button type="button" class="primary" id="finish" disabled>完成配置</button></div>
+      </section>
+
+      <section class="step" data-step="3" hidden>
+        <h2>配置完成</h2>
+        <p>配置和凭据已经保存。后续 CLI 或 Agent 只需使用同一个配置路径。</p>
+        <pre id="next-commands"></pre>
+        <div class="actions"><button type="button" class="primary" id="shutdown">关闭向导</button></div>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

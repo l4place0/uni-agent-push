@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "connections": {
+    "serverchan-main": {
+      "provider": "serverchan",
+      "send_key": "env:SERVERCHAN_SEND_KEY"
+    }
+  },
+  "channels": {
+    "serverchan.owner": {
+      "provider": "serverchan",
+      "connection": "serverchan-main"
+    }
+  },
+  "targets": {
+    "owner": {
+      "channels": ["serverchan.owner"],
+      "policy": "single"
+    }
+  }
+}

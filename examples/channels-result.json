@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "command": "channels",
+  "status": "ok",
+  "channels": [
+    {
+      "name": "email.owner",
+      "provider": "smtp",
+      "delivery_shape": "smtp_recipient_list",
+      "acceptance_scope": "smtp_relay_only",
+      "formats": ["markdown", "plain"],
+      "configured_options": ["reply_to"]
+    },
+    {
+      "name": "qq.owner",
+      "provider": "qqbot",
+      "delivery_shape": "qq_user",
+      "acceptance_scope": "provider_api_only",
+      "formats": ["markdown", "plain"],
+      "configured_options": []
+    },
+    {
+      "name": "qq.team",
+      "provider": "qqbot",
+      "delivery_shape": "qq_group",
+      "acceptance_scope": "provider_api_only",
+      "formats": ["markdown", "plain"],
+      "configured_options": []
+    },
+    {
+      "name": "serverchan.owner",
+      "provider": "serverchan",
+      "delivery_shape": "serverchan_personal",
+      "acceptance_scope": "provider_api_only",
+      "formats": ["markdown", "plain"],
+      "configured_options": ["caller_ip_hidden"]
+    },
+    {
+      "name": "telegram.team",
+      "provider": "telegram",
+      "delivery_shape": "telegram_chat",
+      "acceptance_scope": "provider_api_only",
+      "formats": ["markdown", "plain"],
+      "configured_options": ["link_preview_disabled", "protected_content"]
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "connections": {
+    "qq-main": {
+      "provider": "qqbot",
+      "app_id": "100000000",
+      "client_secret": "env:QQBOT_SECRET"
+    },
+    "telegram-main": {
+      "provider": "telegram",
+      "token": "keychain:uni-push/telegram-main"
+    },
+    "serverchan-sct": {
+      "provider": "serverchan",
+      "send_key": "keychain:uni-push/serverchan-sct"
+    },
+    "smtp-main": {
+      "provider": "smtp",
+      "host": "smtp.example.com",
+      "port": 465,
+      "security": "tls",
+      "username": "agent@example.com",
+      "password": "env:SMTP_PASSWORD",
+      "from": "agent@example.com",
+      "from_name": "Uni Push"
+    }
+  },
+  "channels": {
+    "qq.team": {
+      "provider": "qqbot",
+      "connection": "qq-main",
+      "target": {
+        "type": "group",
+        "openid": "opaque-group-openid"
+      }
+    },
+    "qq.owner": {
+      "provider": "qqbot",
+      "connection": "qq-main",
+      "target": {
+        "type": "user",
+        "openid": "opaque-user-openid"
+      }
+    },
+    "telegram.team": {
+      "provider": "telegram",
+      "connection": "telegram-main",
+      "chat_id": "-1001234567890",
+      "disable_link_preview": true,
+      "protect_content": true
+    },
+    "serverchan.owner": {
+      "provider": "serverchan",
+      "connection": "serverchan-sct",
+      "hide_caller_ip": true
+    },
+    "email.owner": {
+      "provider": "smtp",
+      "connection": "smtp-main",
+      "to": ["owner@example.com"],
+      "reply_to": "ops@example.com"
+    }
+  },
+  "targets": {
+    "owner": {
+      "channels": ["serverchan.owner", "telegram.team"],
+      "policy": "fallback"
+    },
+    "project-team": {
+      "channels": ["qq.team", "telegram.team"],
+      "policy": "broadcast"
+    },
+    "qq-owner": {
+      "channels": ["qq.owner"],
+      "policy": "single"
+    },
+    "owner-all": {
+      "channels": ["serverchan.owner", "telegram.team", "email.owner"],
+      "policy": "broadcast"
+    }
+  }
+}

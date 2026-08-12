@@ -1,0 +1,272 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://uni-push.local/schemas/config-ui-api.v1.schema.json",
+  "title": "Uni Push local configuration UI API v1",
+  "oneOf": [
+    { "$ref": "#/$defs/bootstrapRequest" },
+    { "$ref": "#/$defs/pairRequest" },
+    { "$ref": "#/$defs/sessionTokenResult" },
+    { "$ref": "#/$defs/sessionResult" },
+    { "$ref": "#/$defs/configSnapshot" },
+    { "$ref": "#/$defs/validateRequest" },
+    { "$ref": "#/$defs/saveRequest" },
+    { "$ref": "#/$defs/saveResult" },
+    { "$ref": "#/$defs/testPrepareRequest" },
+    { "$ref": "#/$defs/testPreparedResult" },
+    { "$ref": "#/$defs/testConfirmRequest" },
+    { "$ref": "#/$defs/shutdownRequest" },
+    { "$ref": "#/$defs/shutdownResult" },
+    { "$ref": "#/$defs/apiError" }
+  ],
+  "$defs": {
+    "revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "token": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{43}$"
+    },
+    "base": {
+      "type": "object",
+      "required": ["schema_version"],
+      "properties": { "schema_version": { "const": 1 } }
+    },
+    "bootstrapRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "action", "bootstrap_token"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "action": { "const": "bootstrap" },
+        "bootstrap_token": { "$ref": "#/$defs/token" }
+      }
+    },
+    "pairRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "action", "pairing_code"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "action": { "const": "pair" },
+        "pairing_code": { "type": "string", "pattern": "^[0-9]{8}$" }
+      }
+    },
+    "sessionTokenResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "kind", "session_token"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "kind": { "const": "session_started" },
+        "session_token": { "$ref": "#/$defs/token" }
+      }
+    },
+    "sessionResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "idle_expires_in_seconds",
+        "absolute_expires_in_seconds"
+      ],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "kind": { "const": "session" },
+        "idle_expires_in_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 600
+        },
+        "absolute_expires_in_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3600
+        }
+      }
+    },
+    "configSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "kind", "revision", "config"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "kind": { "const": "config_snapshot" },
+        "revision": { "$ref": "#/$defs/revision" },
+        "config": { "$ref": "config.v1.schema.json" }
+      }
+    },
+    "validateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "action", "revision", "config"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "action": { "const": "validate_config" },
+        "revision": { "$ref": "#/$defs/revision" },
+        "config": { "$ref": "config.v1.schema.json" }
+      }
+    },
+    "saveRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "action",
+        "revision",
+        "config",
+        "keychain_updates"
+      ],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "action": { "const": "save_config" },
+        "revision": { "$ref": "#/$defs/revision" },
+        "config": { "$ref": "config.v1.schema.json" },
+        "keychain_updates": {
+          "type": "array",
+          "maxItems": 32,
+          "items": { "$ref": "#/$defs/keychainUpdate" }
+        }
+      }
+    },
+    "keychainUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference", "value"],
+      "properties": {
+        "reference": {
+          "type": "string",
+          "maxLength": 512,
+          "pattern": "^keychain:[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$"
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192
+        }
+      }
+    },
+    "saveResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "revision",
+        "backup_created",
+        "keychain_updates_applied"
+      ],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "kind": { "const": "config_saved" },
+        "revision": { "$ref": "#/$defs/revision" },
+        "backup_created": { "type": "boolean" },
+        "keychain_updates_applied": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 32
+        }
+      }
+    },
+    "testPrepareRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "action", "revision", "request"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "action": { "const": "prepare_test" },
+        "revision": { "$ref": "#/$defs/revision" },
+        "request": { "$ref": "send-request.v1.schema.json" }
+      }
+    },
+    "testPreparedResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "confirmation_id",
+        "expires_in_seconds",
+        "request_fingerprint",
+        "dry_run"
+      ],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "kind": { "const": "test_prepared" },
+        "confirmation_id": { "$ref": "#/$defs/token" },
+        "expires_in_seconds": { "const": 60 },
+        "request_fingerprint": { "$ref": "#/$defs/revision" },
+        "dry_run": { "$ref": "dry-run-result.v1.schema.json" }
+      }
+    },
+    "testConfirmRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "action",
+        "confirmation_id",
+        "request_fingerprint",
+        "confirmed"
+      ],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "action": { "const": "confirm_test" },
+        "confirmation_id": { "$ref": "#/$defs/token" },
+        "request_fingerprint": { "$ref": "#/$defs/revision" },
+        "confirmed": { "const": true }
+      }
+    },
+    "shutdownRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "action"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "action": { "const": "shutdown" }
+      }
+    },
+    "shutdownResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "kind"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "kind": { "const": "shutting_down" }
+      }
+    },
+    "apiError": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "kind", "error"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "kind": { "const": "error" },
+        "error": {
+          "enum": [
+            "invalid_request",
+            "unauthorized",
+            "request_forbidden",
+            "session_expired",
+            "bootstrap_expired",
+            "bootstrap_rejected",
+            "pairing_expired",
+            "pairing_rejected",
+            "rate_limited",
+            "body_too_large",
+            "revision_conflict",
+            "validation_failed",
+            "keychain_write_failed",
+            "config_write_failed",
+            "recovery_required",
+            "confirmation_expired",
+            "confirmation_mismatch",
+            "confirmation_used",
+            "internal_error"
+          ]
+        }
+      }
+    }
+  }
+}

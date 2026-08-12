@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "operation": "dry_run",
+  "status": "ready",
+  "notification_id": "incident-2026-08-11.1",
+  "request_fingerprint": "6e46dc568171ece1f8b63608bb34ab0c8efb932bb1d8d1d3adf5aa1155fb3752",
+  "delivery_policy": "broadcast",
+  "guarantees": {
+    "network_access": false,
+    "secrets_resolved": false,
+    "ledger_mutated": false,
+    "persistent_state_written": false
+  },
+  "attempts": [
+    {
+      "order": 1,
+      "channel": "serverchan.owner",
+      "provider": "serverchan",
+      "condition": "always",
+      "plan_completeness": "secret_dependent",
+      "acceptance_scope": "provider_api_only",
+      "output_format": "provider_markdown",
+      "transformations": ["url_appended_to_body"]
+    },
+    {
+      "order": 2,
+      "channel": "telegram.team",
+      "provider": "telegram",
+      "condition": "always",
+      "plan_completeness": "complete",
+      "acceptance_scope": "provider_api_only",
+      "output_format": "provider_html",
+      "transformations": [
+        "title_prefixed_to_body",
+        "url_appended_to_body",
+        "summary_omitted",
+        "tags_omitted",
+        "markdown_to_provider_html"
+      ]
+    },
+    {
+      "order": 3,
+      "channel": "email.owner",
+      "provider": "smtp",
+      "condition": "always",
+      "plan_completeness": "complete",
+      "acceptance_scope": "smtp_relay_only",
+      "output_format": "email_multipart",
+      "transformations": [
+        "url_appended_to_body",
+        "summary_omitted",
+        "tags_omitted",
+        "markdown_to_email_multipart"
+      ]
+    }
+  ],
+  "warnings": [
+    "credentials_not_checked",
+    "connectivity_not_checked",
+    "secret_dependent_capabilities_not_checked",
+    "broadcast_contacts_all_channels",
+    "smtp_acceptance_is_relay_only",
+    "provider_rendering_may_differ"
+  ]
+}
