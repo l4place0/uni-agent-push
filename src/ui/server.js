@@ -18,6 +18,9 @@ const assetDefinitions = {
 };
 
 async function readAsset(asset) {
+  if (globalThis.__UNI_PUSH_UI_ASSETS__?.[asset.key] !== undefined) {
+    return Buffer.from(globalThis.__UNI_PUSH_UI_ASSETS__[asset.key]);
+  }
   if (process.env.NODE_SEA === "1") {
     const { getAsset } = await import("node:sea");
     return Buffer.from(getAsset(asset.key));

@@ -46,7 +46,7 @@ jobs:
       run:
         shell: ${{ matrix.shell }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v6
         with:
           node-version: 26.5.0
@@ -61,7 +61,7 @@ jobs:
       - name: Package Windows binary
         if: runner.os == 'Windows'
         run: Compress-Archive -Path dist/uni-push.exe -DestinationPath "${{ matrix.archive }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.target }}
           path: ${{ matrix.archive }}
@@ -74,7 +74,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           path: release-assets
           merge-multiple: true

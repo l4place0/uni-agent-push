@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
-import { join, resolve } from "node:path";
+import { join, posix, resolve, win32 } from "node:path";
 import { classifySendKey } from "./providers/serverchan.js";
 import { diagnoseTelegram } from "./providers/telegram.js";
 import { diagnoseQQBot } from "./providers/qqbot.js";
@@ -71,12 +71,14 @@ function requireConfig(options, env) {
 }
 
 export function defaultConfigPath(env = process.env, { home = homedir(), platform = process.platform } = {}) {
-  if (platform === "win32") return join(env.APPDATA || join(home, "AppData", "Roaming"), "uni-push", "config.json");
-  return join(env.XDG_CONFIG_HOME || join(home, ".config"), "uni-push", "config.json");
+  const pathApi = platform === "win32" ? win32 : posix;
+  if (platform === "win32") return pathApi.join(env.APPDATA || pathApi.join(home, "AppData", "Roaming"), "uni-push", "config.json");
+  return pathApi.join(env.XDG_CONFIG_HOME || pathApi.join(home, ".config"), "uni-push", "config.json");
 }
 
 export function resolveOnboardConfig(options, env = process.env, runtime = {}) {
-  return resolve(options.config ?? env.UNI_PUSH_CONFIG ?? defaultConfigPath(env, runtime));
+  const explicit = options.config ?? env.UNI_PUSH_CONFIG;
+  return explicit ? resolve(explicit) : defaultConfigPath(env, runtime);
 }
 
 async function validateCommand(configPath) {

@@ -58,7 +58,9 @@ test("loopback UI serves assets, protects API, validates, and saves", async (t) 
   });
   assert.deepEqual(await saved.json(), { saved: true });
   assert.deepEqual(JSON.parse(await readFile(configPath, "utf8")), defaultConfig());
-  assert.equal((await stat(credentialsPath(configPath))).mode & 0o777, 0o600);
+  if (process.platform !== "win32") {
+    assert.equal((await stat(credentialsPath(configPath))).mode & 0o777, 0o600);
+  }
   assert.equal((await resolveSecret("store:serverchan-main", { configPath })), firstKey);
   assert.equal((await readFile(configPath, "utf8")).includes(firstKey), false);
 

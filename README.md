@@ -124,7 +124,7 @@ flowchart TB
     M --> LA["ubuntu-24.04-arm\nlinux-arm64"]
     M --> WX["windows-2025\nwindows-x64"]
     M --> WA["windows-11-arm\nwindows-arm64"]
-    DX --> B["npm ci → tests → Node SEA → binary smoke"]
+    DX --> B["npm ci → tests → standalone build → binary smoke"]
     DA --> B
     LX --> B
     LA --> B
@@ -135,8 +135,9 @@ flowchart TB
     H --> R["GitHub Release"]
 ```
 
-Node SEA 将应用 bundle 与 Onboarding 静态资源嵌入单文件，不要求目标机器安装
-Node.js。当前 macOS 仅做 ad-hoc 签名，Windows 未做商业证书签名；正式代码签名
+Node SEA 将应用 bundle 与 Onboarding 静态资源嵌入单文件；由于 Node SEA 明确不支持
+macOS Intel，该目标使用 Bun standalone compile。目标机器均不要求安装 Node.js。
+当前 macOS 仅做 ad-hoc 签名，Windows 未做商业证书签名；正式代码签名
 与 notarization 是后续发布加固项。
 
 ### 开发
@@ -194,6 +195,8 @@ npm run check
 
 `.github/workflows/release.yml` builds and smoke-tests all six native targets.
 Tags matching `v*` publish archives plus `SHA256SUMS`. End users do not need a
-Node.js installation. macOS artifacts are currently ad-hoc signed and Windows
+Node.js installation. Node SEA is used where supported; macOS Intel uses Bun's
+standalone compiler because Node SEA excludes that target. macOS artifacts are
+currently ad-hoc signed and Windows
 artifacts are unsigned; production certificate signing and notarization remain
 release-hardening work.
