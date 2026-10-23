@@ -1,0 +1,4 @@
+interface:
+  display_name: "Uni Push"
+  short_description: "Install, onboard, update, and operate Uni Push"
+  default_prompt: "Use $uni-agent-push to install or update the CLI, onboard a provider, collect a sanitized issue report, or send an explicitly authorized notification."

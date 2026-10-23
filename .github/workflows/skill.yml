@@ -1,0 +1,79 @@
+name: Validate Skill
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SKILL_DIR: skills/uni-agent-push
+
+jobs:
+  skill:
+    name: Skill structure
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Validate Skill structure
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+
+          skill = Path(os.environ["SKILL_DIR"])
+          text = (skill / "SKILL.md").read_text(encoding="utf-8")
+          assert text.startswith("---\nname: uni-agent-push\n"), "SKILL.md frontmatter name must be uni-agent-push"
+          assert "description:" in text, "SKILL.md must declare a description"
+
+          assert (skill / "agents" / "openai.yaml").is_file(), "agents/openai.yaml is missing"
+          assert (skill / "references" / "operations.md").is_file(), "references/operations.md is missing"
+
+          scripts = [
+              "install.sh",
+              "update.sh",
+              "onboard.sh",
+              "issue.sh",
+              "install.ps1",
+              "update.ps1",
+              "onboard.ps1",
+              "issue.ps1",
+          ]
+          missing = [name for name in scripts if not (skill / "scripts" / name).is_file()]
+          assert not missing, f"missing scripts: {missing}"
+
+          assert (skill / "test" / "test-posix.sh").is_file(), "test/test-posix.sh is missing"
+          assert (skill / "test" / "Test-PowerShell.ps1").is_file(), "test/Test-PowerShell.ps1 is missing"
+
+          print("Skill structure is valid")
+          PY
+      - name: POSIX shell syntax
+        run: |
+          for script in "$SKILL_DIR"/scripts/*.sh "$SKILL_DIR"/test/*.sh; do
+            sh -n "$script"
+          done
+          echo "POSIX shell syntax is valid"
+
+  posix:
+    name: POSIX scripts (${{ matrix.runner }})
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, macos-15]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Run POSIX thin-script tests
+        run: sh "$SKILL_DIR/test/test-posix.sh"
+
+  powershell:
+    name: PowerShell scripts
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v5
+      - name: Parse PowerShell thin scripts
+        shell: pwsh
+        run: ./skills/uni-agent-push/test/Test-PowerShell.ps1

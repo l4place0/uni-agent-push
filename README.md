@@ -6,7 +6,8 @@
 
 Uni Push CLI 是面向 Agent 的统一外部通知命令行。它把配置、凭据解析、
 目标路由、幂等投递、平台协议和本机 Onboarding 封装进一个独立二进制；
-上层 Agent Skill 只负责说明与安装、更新、诊断脚本。
+Agent Skill 位于本仓库 [skills/uni-agent-push](skills/uni-agent-push)，
+只负责说明与安装、更新、诊断脚本。
 
 首版支持：
 
@@ -58,7 +59,7 @@ uni-push-linux-arm64.tar.gz
 SHA256SUMS
 ```
 
-推荐使用独立 [Uni Push Skill](https://github.com/l4place0/uni-push-skill)
+推荐使用本仓库内置的 [Uni Push Skill](skills/uni-agent-push)
 自动识别平台、校验 SHA-256 并安装。也可以从本仓库 Releases 手动下载。
 
 ### 使用
@@ -154,8 +155,9 @@ npm run check
 
 Uni Push CLI is a unified external-notification command line for Agents. It
 owns configuration, secret resolution, logical routing, idempotency, provider
-protocols, and loopback Onboarding in one standalone binary. The separate Agent
-Skill contains only documentation and thin lifecycle scripts.
+protocols, and loopback Onboarding in one standalone binary. The Agent Skill in
+this same repository at [skills/uni-agent-push](skills/uni-agent-push) contains
+only documentation and thin lifecycle scripts.
 
 The first release supports ServerChan, Telegram Bot, and QQ Bot on macOS,
 Windows, and Linux for both `x64` and `arm64`.
@@ -175,7 +177,7 @@ the protocol-level details shared by both languages.
 
 ### Quick start
 
-Install through [Uni Push Skill](https://github.com/l4place0/uni-push-skill),
+Install through the bundled [Uni Push Skill](skills/uni-agent-push),
 or download the matching archive and verify it against `SHA256SUMS`.
 
 ```bash

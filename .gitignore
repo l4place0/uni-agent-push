@@ -6,3 +6,4 @@
 *.ledger.json.lock
 dist/
 node_modules/
+uni-push-issue-*.md

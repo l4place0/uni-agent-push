@@ -2,9 +2,10 @@
 
 Status: proposal for review
 
-This document freezes the boundary between the independently versioned
-`uni-push-skill` and `uni-push-cli` repositories. The schemas and executable
-implementation in this repository are owned by the CLI.
+This document freezes the boundary between the Skill layer and the CLI. Both now
+live in this repository: the Skill is the thin documentation and script layer at
+`skills/uni-agent-push`, while the CLI owns the schemas and the executable
+implementation.
 
 ## Product boundary
 

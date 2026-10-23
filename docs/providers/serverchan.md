@@ -3,8 +3,8 @@
 Status: v1 proposal
 
 The ServerChan adapter supports both Server酱 Turbo (SCT) and Server酱³ (SC3).
-It implements the provider protocol inside `uni-push-cli`; it does not invoke a
-second Agent Skill at runtime.
+It implements the provider protocol inside the `uni-push` binary; it does not
+invoke a second Agent Skill at runtime.
 
 ## Upstream reference
 
