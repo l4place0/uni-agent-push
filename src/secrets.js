@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
-import { chmod, mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
-import { basename, dirname, extname, join } from "node:path";
+import { chmod, mkdir, open, readFile, rename, unlink, writeFile } from "node:fs/promises";
+import { basename, dirname, extname, join, resolve } from "node:path";
+import { setTimeout } from "node:timers/promises";
 import { UniPushError } from "./errors.js";
 
 const ENV_REF = /^env:([A-Z_][A-Z0-9_]*)$/;
@@ -56,13 +57,43 @@ async function writeStore(configPath, store) {
   }
 }
 
+async function withStoreLock(configPath, action) {
+  const lockPath = `${credentialsPath(configPath)}.lock`;
+  let handle;
+  const deadline = Date.now() + 5000;
+  try {
+    await mkdir(dirname(lockPath), { recursive: true, mode: 0o700 });
+    while (!handle) {
+      try {
+        handle = await open(lockPath, "wx", 0o600);
+      } catch (error) {
+        if (error?.code !== "EEXIST" || Date.now() >= deadline) throw error;
+        await setTimeout(10);
+      }
+    }
+  } catch {
+    throw new UniPushError("credential_write_failed", "Unable to lock credential store", 21);
+  }
+  try {
+    // Lock the entire read/modify/write transaction across UI requests and CLI
+    // processes. Never remove another writer's lock on timeout.
+    return await action();
+  } finally {
+    await handle.close();
+    await unlink(lockPath);
+  }
+}
+
 export async function saveStoredSecret(configPath, id, value) {
   if (!STORE_REF.test(`store:${id}`) || typeof value !== "string" || value.length === 0 || value.length > 4096) {
     throw new UniPushError("credential_invalid", "Credential is invalid", 21);
   }
-  const store = await readStore(configPath, { allowMissing: true });
-  store.secrets[id] = value;
-  await writeStore(configPath, store);
+  configPath = resolve(configPath);
+  await withStoreLock(configPath, async () => {
+    const store = await readStore(configPath, { allowMissing: true });
+    store.secrets[id] = value;
+    await writeStore(configPath, store);
+  });
 }
 
 export async function hasStoredSecret(configPath, id) {

@@ -40,6 +40,7 @@ flowchart LR
 关键边界：
 
 - 配置只保存 `store:<id>` 或 `env:VARIABLE`，不保存明文凭据。
+- 保存凭据时使用跨进程文件锁覆盖完整的读改写过程，并发写入不同凭据不会互相覆盖。锁等待超过 5 秒返回 `credential_write_failed`；如果写入进程异常退出留下 `*.credentials.json.lock`，须先停止所有使用该配置的进程，再移除对应锁文件。
 - `doctor` 不发送消息；Telegram 调用 `getMe/getChat`，QQ 只换取 Access Token。
 - 同一 `notification_id` 与相同内容精确重放；内容变化则返回冲突。
 - `uncertain` 不自动重试，避免重复通知。
