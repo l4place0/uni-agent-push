@@ -168,3 +168,14 @@ test("CLI doctor and inventory cover Telegram and QQ Bot", async (t) => {
   assert.equal(JSON.parse(inventory.text()).channels[0].provider, "qqbot");
   assert.equal(inventory.text().includes("opaque-user"), false);
 });
+
+test("CLI offline recovery requires assertion and emits machine-readable result", async (t) => {
+ const directory = await mkdtemp(join(tmpdir(), "uni-push-recover-"));
+ t.after(() => rm(directory, { recursive: true, force: true }));
+ const path = join(directory, "ledger.json");
+ await writeFile(`${path}.lock`, "");
+ assert.equal(await main(["ledger", "recover-lock", "--ledger", path], { stdout: sink().stream, stderr: sink().stream }), 20);
+ const output = sink();
+ assert.equal(await main(["ledger", "recover-lock", "--ledger", path, "--writers-stopped", "--json"], { stdout: output.stream, stderr: sink().stream }), 0);
+ assert.equal(JSON.parse(output.text()).recovered, true);
+});

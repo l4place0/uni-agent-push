@@ -38,7 +38,7 @@ test("accepted send is stored and exact replay calls provider once", async (t) =
   };
   const options = { config: config(), request: request(), ledgerPath, env: { SERVERCHAN_SEND_KEY: "SCTabc" }, fetchImpl };
   const first = await sendNotification(options);
-  const second = await sendNotification(options);
+  const second = await sendNotification({ ...options, env: new Proxy({}, { get() { throw new Error("secret accessed on replay"); } }) });
   assert.equal(first.status, "accepted");
   assert.deepEqual(second, first);
   assert.equal(calls, 1);
@@ -161,4 +161,11 @@ test("unified send dispatches Telegram and QQ Bot with sanitized receipts", asyn
   assert.equal(qqReceipt.attempts[0].provider, "qqbot");
   assert.equal(qqCalls, 2);
   assert.equal(JSON.stringify(qqReceipt).includes(qqSecret), false);
+});
+
+ test("preflight failure does not claim an ID", async (t) => {
+  const ledgerPath = await temporaryLedger(t);
+  const options = { config: config(), request: request(), ledgerPath, fetchImpl: async () => new Response(JSON.stringify({ code: 0 })) };
+  await assert.rejects(() => sendNotification({ ...options, env: {} }), { code: "credential_unavailable" });
+  assert.equal((await sendNotification({ ...options, env: { SERVERCHAN_SEND_KEY: "SCTabc" } })).status, "accepted");
 });

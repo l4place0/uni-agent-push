@@ -31,3 +31,30 @@ A process crash after claim and before completion leaves a pending record that
 requires manual investigation. Automatic stale-claim recovery and retention GC
 remain future hardening work because blind replay could duplicate an external
 notification.
+
+## Offline lock recovery
+
+A crashed process can leave `<ledger>.lock`. Writers never steal locks on a
+timeout: doing so can allow concurrent claims and duplicate external sends.
+Stop **all** CLI send processes and configuration UI instances that use this
+ledger, and prevent scheduled writers from starting during maintenance. Then run:
+
+```sh
+uni-push ledger recover-lock --config /path/to/config.json --writers-stopped --json
+# Or specify --ledger /path/to/custom.ledger.json for a custom ledger.
+```
+
+`--writers-stopped` explicitly asserts that maintenance precondition; it is not
+an automatic process shutdown. The command removes only the lock, never pending
+records or terminal receipts. It supports legacy empty locks and locks whose
+owner metadata was not written before a crash. New locks contain an owner PID;
+recovery refuses a PID that is alive or cannot be checked. PID reuse may require
+waiting for that unrelated process to exit. PID checks alone do not prevent
+recovery races, so concurrent writers or recovery commands are unsupported during
+maintenance. Resume writers after recovery completes. Existing pending records
+still require investigation; use a fresh ID only for a genuinely new notification.
+
+Terminal replay reads the ledger before resolving credentials. A missing or
+revoked current credential therefore does not prevent returning an exact receipt.
+New sends validate credentials before claiming, then atomically check again for
+a concurrent claim or completion.

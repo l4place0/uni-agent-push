@@ -28,6 +28,13 @@ export class Ledger {
     while (descriptor === undefined) {
       try {
         descriptor = openSync(lockPath, "wx", 0o600);
+        try {
+          writeFileSync(descriptor, JSON.stringify({ pid: process.pid }));
+        } catch (error) {
+          closeSync(descriptor);
+          unlinkSync(lockPath);
+          throw error;
+        }
       } catch (error) {
         if (error?.code !== "EEXIST" || Date.now() >= deadline) {
           throw new UniPushError("ledger_unavailable", "Unable to lock idempotency ledger", 23);
@@ -65,19 +72,27 @@ export class Ledger {
     }
   }
 
+  inspect(notificationId, fingerprint) {
+    return this.withLock((ledger) => this.existing(ledger, notificationId, fingerprint));
+  }
+
+  existing(ledger, notificationId, fingerprint) {
+    if (!Object.hasOwn(ledger.notifications, notificationId)) return { kind: "missing" };
+    const existing = ledger.notifications[notificationId];
+    if (existing.request_fingerprint !== fingerprint) return { kind: "conflict" };
+    if (existing.state === "terminal") return { kind: "replay", receipt: existing.receipt };
+    return { kind: "in_progress" };
+  }
+
   claim(notificationId, fingerprint) {
     return this.withLock((ledger, persist) => {
-      const existing = ledger.notifications[notificationId];
-      if (existing) {
-        if (existing.request_fingerprint !== fingerprint) return { kind: "conflict" };
-        if (existing.state === "terminal") return { kind: "replay", receipt: existing.receipt };
-        return { kind: "in_progress" };
-      }
-      ledger.notifications[notificationId] = {
+      const existing = this.existing(ledger, notificationId, fingerprint);
+      if (existing.kind !== "missing") return existing;
+      Object.defineProperty(ledger.notifications, notificationId, { enumerable: true, configurable: true, writable: true, value: {
         request_fingerprint: fingerprint,
         state: "pending",
         created_at: new Date().toISOString(),
-      };
+      } });
       persist();
       return { kind: "claimed" };
     });
@@ -85,7 +100,7 @@ export class Ledger {
 
   complete(notificationId, fingerprint, receipt) {
     this.withLock((ledger, persist) => {
-      const record = ledger.notifications[notificationId];
+      const record = Object.hasOwn(ledger.notifications, notificationId) ? ledger.notifications[notificationId] : undefined;
       if (!record || record.request_fingerprint !== fingerprint || record.state !== "pending") {
         throw new UniPushError("ledger_unavailable", "Unable to store delivery receipt", 23);
       }
@@ -96,4 +111,30 @@ export class Ledger {
   }
 
   close() {}
+}
+
+// Explicit maintenance only: the caller must stop ALL writers first. PID checks
+// are an additional guard, never a substitute for that maintenance precondition.
+export function recoverLedgerLock(path, { writersStopped = false } = {}) {
+  if (!writersStopped) throw new UniPushError("invalid_cli_usage", "Stop all ledger writers and specify --writers-stopped", 20);
+  const lockPath = `${path}.lock`;
+  let contents;
+  try { contents = readFileSync(lockPath, "utf8"); }
+  catch (error) {
+    if (error.code === "ENOENT") return { recovered: false };
+    throw new UniPushError("ledger_unavailable", "Unable to inspect ledger lock", 23);
+  }
+  let owner;
+  try { owner = JSON.parse(contents); } catch {}
+  if (Number.isInteger(owner?.pid) && owner.pid > 0) {
+    try {
+      process.kill(owner.pid, 0);
+      throw new UniPushError("ledger_unavailable", "Ledger lock owner is still running", 23);
+    } catch (error) {
+      if (error.code !== "ESRCH") throw new UniPushError("ledger_unavailable", "Ledger lock owner may still be running", 23);
+    }
+  }
+  try { unlinkSync(lockPath); }
+  catch { throw new UniPushError("ledger_unavailable", "Unable to recover ledger lock", 23); }
+  return { recovered: true };
 }

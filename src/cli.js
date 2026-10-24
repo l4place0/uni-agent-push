@@ -6,6 +6,7 @@ import { diagnoseTelegram } from "./providers/telegram.js";
 import { diagnoseQQBot } from "./providers/qqbot.js";
 import { loadConfig, validateConfig } from "./config.js";
 import { publicError, UniPushError } from "./errors.js";
+import { recoverLedgerLock } from "./ledger.js";
 import { sendNotification } from "./send.js";
 import { startConfigUi } from "./ui/server.js";
 import { resolveSecret } from "./secrets.js";
@@ -18,7 +19,7 @@ function parseOptions(args) {
     const item = args[index];
     if (!item.startsWith("--")) throw new UniPushError("invalid_cli_usage", "Unexpected positional argument", 20);
     const name = item.slice(2);
-    if (["json", "dry-run", "no-open"].includes(name)) {
+    if (["json", "dry-run", "no-open", "writers-stopped"].includes(name)) {
       options[name] = true;
       continue;
     }
@@ -184,6 +185,14 @@ export async function main(args, {
 
     if (["--version", "version"].includes(command)) {
       emit(stdout, { schema_version: 1, command: "version", status: "ok", version: CLI_VERSION });
+      return 0;
+    }
+
+    if (command === "ledger" && maybeSubcommand === "recover-lock") {
+      const options = parseOptions(rest);
+      const path = options.ledger ? resolve(options.ledger) : `${requireConfig(options, env)}.ledger.json`;
+      const result = recoverLedgerLock(path, { writersStopped: options["writers-stopped"] === true });
+      emit(stdout, { schema_version: 1, command: "ledger_recover_lock", status: "ok", ...result });
       return 0;
     }
 

@@ -81,24 +81,29 @@ export async function sendNotification({
   const fingerprint = requestFingerprint(request);
   if (dryRun) return dryRunResult(request, fingerprint, route);
 
-  let prepared;
-  let providerResult;
-  let qqClientSecret;
-  const provider = route.channel.provider;
-  if (provider === "serverchan") {
-    const sendKey = await resolveSecret(route.connection.send_key, { env, configPath });
-    prepared = prepareServerChan({ sendKey, channel: route.channel, message: request.message });
-  } else if (provider === "telegram") {
-    const token = await resolveSecret(route.connection.token, { env, configPath });
-    prepared = prepareTelegram({ token, channel: route.channel, message: request.message });
-  } else if (provider === "qqbot") {
-    qqClientSecret = await resolveSecret(route.connection.client_secret, { env, configPath });
-    prepared = prepareQQBot({ channel: route.channel, message: request.message });
-  } else {
-    throw new UniPushError("configuration_invalid", "Unsupported provider", 21);
-  }
   const ledger = new Ledger(ledgerPath);
   try {
+    const prior = ledger.inspect(request.notification_id, fingerprint);
+    if (prior.kind === "conflict") throw new UniPushError("notification_conflict", "Notification ID already has different content", 23);
+    if (prior.kind === "in_progress") throw new UniPushError("notification_in_progress", "Notification is already in progress", 23);
+    if (prior.kind === "replay") return prior.receipt;
+
+    let prepared;
+    let providerResult;
+    let qqClientSecret;
+    const provider = route.channel.provider;
+    if (provider === "serverchan") {
+      const sendKey = await resolveSecret(route.connection.send_key, { env, configPath });
+      prepared = prepareServerChan({ sendKey, channel: route.channel, message: request.message });
+    } else if (provider === "telegram") {
+      const token = await resolveSecret(route.connection.token, { env, configPath });
+      prepared = prepareTelegram({ token, channel: route.channel, message: request.message });
+    } else if (provider === "qqbot") {
+      qqClientSecret = await resolveSecret(route.connection.client_secret, { env, configPath });
+      prepared = prepareQQBot({ channel: route.channel, message: request.message });
+    } else {
+      throw new UniPushError("configuration_invalid", "Unsupported provider", 21);
+    }
     const claim = ledger.claim(request.notification_id, fingerprint);
     if (claim.kind === "conflict") throw new UniPushError("notification_conflict", "Notification ID already has different content", 23);
     if (claim.kind === "in_progress") throw new UniPushError("notification_in_progress", "Notification is already in progress", 23);
